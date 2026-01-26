@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_saleorder_document_inherit_image_and_total"
+              inherit_id="sale.report_saleorder_document">
+
+        <!-- 1) Forzar que la columna "Amount" use total con impuestos -->
+        <xpath expr="//t[@t-set='price_field']" position="replace">
+            <t t-set="price_field" t-value="'price_total'"/>
+        </xpath>
+
+        <!-- (Opcional) Cambiar el título de la columna Amount -->
+        <xpath expr="//th[@name='th_subtotal']/span" position="replace">
+            <span>Total</span>
+        </xpath>
+
+        <!-- 2) Agregar TH de imagen antes de descripción -->
+        <xpath expr="//th[@name='th_description']" position="before">
+            <th name="th_image" class="text-start">Imagen</th>
+        </xpath>
+
+        <!-- 3) Agregar TD de imagen en líneas de producto (tr_product) antes del nombre -->
+        <xpath expr="//tr[@name='tr_product']/td[@name='td_product_name']" position="before">
+            <td name="td_product_image" class="text-start">
+                <t t-if="line.product_id and line.product_id.image_128">
+                    <img t-att-src="image_data_uri(line.product_id.image_128)"
+                         style="max-height:40px; max-width:40px; object-fit:contain;"/>
+                </t>
+            </td>
+        </xpath>
+
+        <!-- 4) Ajustar colspans de secciones/subsecciones (porque agregamos 1 columna nueva) -->
+        <xpath expr="//tr[@name='tr_section']//t[@t-set='section_name_colspan']" position="replace">
+            <!-- Antes era: 3 + (1 si discount) + (1 si taxes)
+                 Ahora: +1 por la columna Imagen -->
+            <t t-set="section_name_colspan"
+               t-value="4 + (1 if display_discount else 0) + (1 if display_taxes else 0)"/>
+        </xpath>
+
+        <!-- 5) Mantener alineación: en filas de sección agregamos una celda vacía al inicio -->
+        <xpath expr="//tr[@name='tr_section']/td[@name='td_section_name']" position="before">
+            <td name="td_section_image"/>
+        </xpath>
+
+        <!-- 6) Mantener alineación: nota (agregar celda vacía antes) -->
+        <xpath expr="//tr[@name='tr_note']/td[@name='td_note_name']" position="before">
+            <td name="td_note_image"/>
+        </xpath>
+
+        <!-- 7) Ajustar combo: el colspan debe sumar 1 por la imagen -->
+        <xpath expr="//tr[@name='tr_combo']/td[@name='td_combo_name']" position="attributes">
+            <attribute name="t-att-colspan">4 + (1 if display_discount else 0) + (1 if display_taxes else 0)</attribute>
+        </xpath>
+        <xpath expr="//tr[@name='tr_combo']/td[@name='td_combo_name']" position="before">
+            <td name="td_combo_image"/>
+        </xpath>
+
+        <!-- 8) Ajustar resumen agrupado de sección (tr_section_group): agregar celda vacía de imagen -->
+        <xpath expr="//tr[@name='tr_section_group']/td[@name='td_section_group_name']" position="before">
+            <td name="td_section_group_image"/>
+        </xpath>
+
+        <!-- 9) Asegurar que en la celda "Amount" (líneas producto) se muestre el total con impuestos -->
+        <!-- Con price_field='price_total' ya debería, pero reforzamos el caso de línea producto -->
+        <xpath expr="//tr[@name='tr_product']/td[@name='td_product_subtotal']" position="replace">
+            <td t-if="not line.is_downpayment" name="td_product_subtotal" class="text-end o_price_total">
+                <t t-if="not collapse_prices">
+                    <span t-field="line.price_total"/>
+                </t>
+            </td>
+        </xpath>
+
+    </template>
+</odoo>

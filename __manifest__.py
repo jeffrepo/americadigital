@@ -11,7 +11,8 @@
 """,
     'depends': ['base','product'],
     'data': [
-        'views/product_template_views.xml'
+        'views/product_template_views.xml',
+        'views/ir_actions_report_templates.xml',
     ],
     'assets':{},
     'installable': True,
