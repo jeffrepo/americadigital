@@ -9,7 +9,7 @@
     'description': """
 
 """,
-    'depends': ['base','product'],
+    'depends': ['base','product','sale'],
     'data': [
         'views/product_template_views.xml',
         'views/ir_actions_report_templates.xml',
